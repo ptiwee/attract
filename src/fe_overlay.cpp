@@ -938,25 +938,27 @@ int FeOverlay::display_config_dialog(
 	std::vector<sf::Drawable *> draw_list;
 	float slice = size.y / 8;
 
-	sf::RectangleShape bg( sf::Vector2f( size.x, size.y ) );
-	bg.setFillColor( m_bgColour );
-	bg.setOutlineColor( m_textColour );
-	bg.setOutlineThickness( -2 );
+	sf::RectangleShape fade( sf::Vector2f( size.x, size.y ) );
+	fade.setFillColor( m_bgColour );
+	draw_list.push_back( &fade );
+
+	sf::RectangleShape bg( sf::Vector2f( size.x/2, size.y/2 ) );
+	bg.setFillColor( sf::Color::Black );
+	bg.setPosition( sf::Vector2f( size.x/4, size.y/4 ) );
 	draw_list.push_back( &bg );
 
 	FeTextPrimative heading( font, m_selColour, sf::Color::Transparent, char_size / 2 );
-	heading.setSize( size.x, slice );
-	heading.setOutlineColor( m_textColour );
-	heading.setOutlineThickness( -2 );
+	heading.setSize( size.x/2, slice );
 	heading.setTextScale( text_scale );
 	heading.setString( ctx.title );
+	heading.setPosition( sf::Vector2f( size.x/4, size.y/4 ) );
 	draw_list.push_back( &heading );
 
-	unsigned int width = size.x - 4;
+	unsigned int width = size.x / 2;
 	if ( ctx.style == FeConfigContext::EditList )
-		width = size.x / 2 - 2;
+		width = size.x / 4;
 
-	int rows = ( size.y - slice * 2 ) / ( char_size * 0.75 * text_scale.y );
+	int rows = ( size.y/2 - slice * 2 ) / ( char_size * 0.75 * text_scale.y );
 
 	//
 	// The "settings" (left) list, also used to list submenu and exit options...
@@ -971,8 +973,8 @@ int FeOverlay::display_config_dialog(
 		char_size / 2,
 		rows );
 
-	sdialog.setPosition( 2, slice );
-	sdialog.setSize( width, size.y - slice * 2 );
+	sdialog.setPosition( size.x/4, size.y/4 + slice );
+	sdialog.setSize( width, size.y/2 - slice * 2 );
 	sdialog.init_dimensions();
 	sdialog.setTextScale( text_scale );
 	draw_list.push_back( &sdialog );
@@ -994,8 +996,8 @@ int FeOverlay::display_config_dialog(
 		//
 		// We only use the values listbox in the "EditList" mode
 		//
-		vdialog.setPosition( width + 2, slice );
-		vdialog.setSize( width, size.y - slice * 2 );
+		vdialog.setPosition( size.x/4 + width, size.y/4 + slice );
+		vdialog.setSize( width, size.y/2 - slice * 2 );
 		vdialog.init_dimensions();
 		vdialog.setTextScale( text_scale );
 		draw_list.push_back( &vdialog );
@@ -1006,10 +1008,8 @@ int FeOverlay::display_config_dialog(
 		sf::Color::Transparent,
 		char_size / 3 );
 
-	footer.setPosition( 0, size.y - slice );
-	footer.setSize( size.x, slice );
-	footer.setOutlineColor( m_textColour );
-	footer.setOutlineThickness( -2 );
+	footer.setPosition( size.x/4, 3*size.y/4 - slice );
+	footer.setSize( size.x/2, slice );
 	footer.setWordWrap( true );
 	footer.setTextScale( text_scale );
 	draw_list.push_back( &footer );
