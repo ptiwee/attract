@@ -190,10 +190,10 @@ FeOverlay::FeOverlay( sf::RenderWindow &wnd,
 	: m_wnd( wnd ),
 	m_feSettings( fes ),
 	m_fePresent( fep ),
-	m_textColour( sf::Color::White ),
-	m_bgColour( sf::Color( 0, 0, 0, 220 ) ),
-	m_selColour( sf::Color::Yellow ),
-	m_selBgColour( sf::Color( 0, 0, 200, 220 ) ),
+	m_textColour( sf::Color( 0, 0, 0, 138 ) ),
+	m_bgColour( sf::Color( 0, 0, 0, 120 ) ),
+	m_selColour( sf::Color( 0, 0, 0, 222 ) ),
+	m_selBgColour( sf::Color( 227, 242, 253, 230 ) ),
 	m_overlay_is_on( false )
 {
 }
@@ -936,21 +936,22 @@ int FeOverlay::display_config_dialog(
 
 	const sf::Font *font = m_fePresent.get_default_font();
 	std::vector<sf::Drawable *> draw_list;
-	float slice = size.y / 8;
+	float slice = size.y / 16;
 
 	sf::RectangleShape fade( sf::Vector2f( size.x, size.y ) );
 	fade.setFillColor( m_bgColour );
 	draw_list.push_back( &fade );
 
 	sf::RectangleShape bg( sf::Vector2f( size.x/2, size.y/2 ) );
-	bg.setFillColor( sf::Color::Black );
+	bg.setFillColor( sf::Color::White );
 	bg.setPosition( sf::Vector2f( size.x/4, size.y/4 ) );
 	draw_list.push_back( &bg );
 
-	FeTextPrimative heading( font, m_selColour, sf::Color::Transparent, char_size / 2 );
+	FeTextPrimative heading( font, sf::Color::White, sf::Color( 33, 150, 243 ), char_size / 2 );
 	heading.setSize( size.x/2, slice );
 	heading.setTextScale( text_scale );
 	heading.setString( ctx.title );
+	heading.setAlignment( FeTextPrimative::Left );
 	heading.setPosition( sf::Vector2f( size.x/4, size.y/4 ) );
 	draw_list.push_back( &heading );
 
@@ -969,7 +970,7 @@ int FeOverlay::display_config_dialog(
 		m_textColour,
 		sf::Color::Transparent,
 		m_selColour,
-		sf::Color( 0, 0, 200, 200 ),
+		m_selBgColour,
 		char_size / 2,
 		rows );
 
@@ -987,7 +988,7 @@ int FeOverlay::display_config_dialog(
 		m_textColour,
 		sf::Color::Transparent,
 		m_textColour,
-		sf::Color( 0, 0, 200, 200 ),
+		m_selBgColour,
 		char_size / 2,
 		rows );
 
@@ -1002,6 +1003,17 @@ int FeOverlay::display_config_dialog(
 		vdialog.setTextScale( text_scale );
 		draw_list.push_back( &vdialog );
 	}
+
+	sf::VertexArray headingShadow(sf::Quads, 4);
+	headingShadow[0].position = sf::Vector2f(size.x/4, size.y/4 + slice + slice/12);
+	headingShadow[0].color = sf::Color::Transparent;
+	headingShadow[1].position = sf::Vector2f(size.x/4, size.y/4 + slice);
+	headingShadow[1].color = sf::Color(0, 0, 0, 50);
+	headingShadow[2].position = sf::Vector2f(3*size.x/4, size.y/4 + slice);
+	headingShadow[2].color = sf::Color(0, 0, 0, 50);
+	headingShadow[3].position = sf::Vector2f(3*size.x/4, size.y/4 + slice + slice/12);
+	headingShadow[3].color = sf::Color::Transparent;
+	draw_list.push_back( &headingShadow );
 
 	FeTextPrimative footer( font,
 		m_textColour,
