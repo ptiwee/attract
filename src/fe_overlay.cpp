@@ -557,20 +557,25 @@ int FeOverlay::common_basic_dialog(
 	int char_size;
 	get_common( size, text_scale, char_size );
 
-	float slice = size.y / 2;
+	float slice = size.y / 16;
 
-	sf::RectangleShape bg( sf::Vector2f( size.x, size.y ) );
-	bg.setFillColor( m_bgColour );
-	bg.setOutlineColor( m_textColour );
-	bg.setOutlineThickness( -2 );
+	sf::RectangleShape fade( sf::Vector2f( size.x, size.y ) );
+	fade.setFillColor( m_bgColour );
+	draw_list.push_back( &fade );
+
+	sf::RectangleShape bg( sf::Vector2f( size.x/2, size.y/2 ) );
+	bg.setFillColor( sf::Color::White );
+	bg.setPosition( sf::Vector2f( size.x/4, size.y/4 ) );
+	draw_list.push_back( &bg );
 
 	FeTextPrimative message(
 		m_fePresent.get_font(),
-		m_textColour,
-		sf::Color::Transparent,
-		char_size );
+		sf::Color::White,
+		sf::Color( 33, 150, 243 ),
+		char_size / 2);
 	message.setWordWrap( true );
 	message.setTextScale( text_scale );
+	message.setAlignment( FeTextPrimative::Left );
 
 	FePresentableParent temp;
 	FeListBox dialog( temp,
@@ -579,21 +584,33 @@ int FeOverlay::common_basic_dialog(
 		sf::Color::Transparent,
 		m_selColour,
 		m_selBgColour,
-		char_size,
+		char_size / 2,
 		( size.y - slice ) / ( char_size * 1.5 * text_scale.y ) );
 
-	message.setPosition( 2, 2 );
-	message.setSize( size.x - 4, slice );
+	message.setPosition( size.x/4, size.y/4 );
+	message.setSize( size.x/2, slice );
 	message.setString( msg_str );
 
-	dialog.setPosition( 2, slice );
-	dialog.setSize( size.x - 4, size.y - 4 - slice );
+	dialog.setPosition( size.x/4, size.y/4 + slice );
+	dialog.setSize( size.x/2, 3*size.y/4 - slice );
 	dialog.init_dimensions();
 	dialog.setTextScale( text_scale );
 
+	sf::VertexArray headingShadow(sf::Quads, 4);
+	headingShadow[0].position = sf::Vector2f(size.x/4, size.y/4 + slice + slice/12);
+	headingShadow[0].color = sf::Color::Transparent;
+	headingShadow[1].position = sf::Vector2f(size.x/4, size.y/4 + slice);
+	headingShadow[1].color = sf::Color(0, 0, 0, 50);
+	headingShadow[2].position = sf::Vector2f(3*size.x/4, size.y/4 + slice);
+	headingShadow[2].color = sf::Color(0, 0, 0, 50);
+	headingShadow[3].position = sf::Vector2f(3*size.x/4, size.y/4 + slice + slice/12);
+	headingShadow[3].color = sf::Color::Transparent;
+
+	draw_list.push_back( &headingShadow );
 	draw_list.push_back( &bg );
 	draw_list.push_back( &message );
 	draw_list.push_back( &dialog );
+	draw_list.push_back( &headingShadow );
 
 	dialog.setCustomText( sel, list );
 
