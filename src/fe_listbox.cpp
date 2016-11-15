@@ -140,12 +140,6 @@ void FeListBox::init_dimensions()
 	for ( int i=0; i< m_rows; i++ )
 	{
 		FeTextPrimative t( m_base_text );
-		if ( i == m_rows / 2 )
-		{
-			t.setColor( m_selColour );
-			t.setBgColor( m_selBg );
-			t.setStyle( m_selStyle );
-		}
 
 		t.setPosition( rotater.transformPoint( pos.x, pos.y+(i*actual_spacing)) );
 		t.setSize( size.x, actual_spacing );
@@ -266,15 +260,36 @@ void FeListBox::internalSetText( const int index )
 {
 	if ( !m_texts.empty() )
 	{
-		int offset = index - ( (int)m_texts.size() / 2 );
+		int offset = 0;
+		int half = m_texts.size()%2 ? m_texts.size()/2 :
+			m_texts.size()/2 - 1;
+
+		if (m_displayList.size() > m_texts.size()) {
+			if (index > half) {
+				offset = index - half;
+			}
+			if (index > m_displayList.size() - (m_texts.size() -
+						half)) {
+				offset = m_displayList.size() - m_texts.size();
+			}
+		}
 
 		for ( int i=0; i < (int)m_texts.size(); i++ )
 		{
 			int listentry = offset + i;
-			if (( listentry < 0 ) || ( listentry >= (int)m_displayList.size() ))
+			if (( listentry < 0 ) || ( listentry >= (int)m_displayList.size() )) {
 				m_texts[i].setString("");
-			else
+			} else if (listentry == index) {
 				m_texts[i].setString( m_displayList[listentry] );
+				m_texts[i].setColor( m_selColour );
+				m_texts[i].setBgColor( m_selBg );
+				m_texts[i].setStyle( m_selStyle );
+			} else {
+				m_texts[i].setString( m_displayList[listentry] );
+				m_texts[i].setColor( m_base_text.getColor() );
+				m_texts[i].setBgColor( m_base_text.getBgColor() );
+				m_texts[i].setStyle( m_base_text.getStyle() );
+			}
 		}
 	}
 }
