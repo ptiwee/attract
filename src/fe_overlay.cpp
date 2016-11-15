@@ -304,108 +304,59 @@ int FeOverlay::common_list_dialog(
 	if ( extra_exit != FeInputMap::LAST_COMMAND )
 		var = (int)extra_exit;
 
-	FeText *custom_caption;
-	FeListBox *custom_lb;
-	bool do_custom = m_fePresent.get_overlay_custom_controls(
-		custom_caption, custom_lb );
+	sf::Vector2i size;
+	sf::Vector2f text_scale;
+	int char_size;
+	get_common( size, text_scale, char_size );
 
-	if ( fm.flag_set() && do_custom )
-	{
-		//
-		// Use custom controls set by script
-		//
-		std::string old_cap;
-		if ( custom_caption )
-		{
-			old_cap = custom_caption->get_string();
-			custom_caption->set_string( title.c_str() );
-		}
+	if ( options.size() > 8 )
+		char_size /= 2;
 
-		if ( custom_lb )
-			custom_lb->setCustomText( sel, options );
+	sf::RectangleShape bg( sf::Vector2f( size.x, size.y ) );
+	bg.setFillColor( m_bgColour );
+	bg.setOutlineColor( m_textColour );
+	bg.setOutlineThickness( -2 );
+	draw_list.push_back( &bg );
 
+	FeTextPrimative heading( m_fePresent.get_font(), m_selColour,
+		sf::Color::Transparent, char_size );
+	heading.setSize( size.x, size.y / 8 );
+	heading.setOutlineColor( m_textColour );
+	heading.setOutlineThickness( -2 );
+	heading.setTextScale( text_scale );
+	heading.setString( title );
+	draw_list.push_back( &heading );
+
+	FePresentableParent temp;
+	FeListBox dialog( temp,
+		m_fePresent.get_font(),
+		m_textColour,
+		sf::Color::Transparent,
+		m_selColour,
+		m_selBgColour,
+		char_size,
+		size.y / ( char_size * 1.5 * text_scale.y ) );
+
+	dialog.setPosition( 2, size.y / 8 );
+	dialog.setSize( size.x - 4, size.y * 7 / 8 );
+	dialog.init_dimensions();
+	dialog.setTextScale( text_scale );
+	dialog.setCustomText( sel, options );
+	draw_list.push_back( &dialog );
+
+	if ( fm.flag_set() )
 		m_fePresent.on_transition( ShowOverlay, var );
 
-		init_event_loop( c );
-		while ( event_loop( c ) == false )
-		{
-			m_fePresent.on_transition( NewSelOverlay, sel );
-
-			if ( custom_lb )
-				custom_lb->setCustomSelection( sel );
-		}
-
-		m_fePresent.on_transition( HideOverlay, 0 );
-
-		// reset to the old text in these controls when done
-		if ( custom_caption )
-			custom_caption->set_string( old_cap.c_str() );
-
-		if ( custom_lb )
-		{
-			custom_lb->setCustomText( 0, std::vector<std::string>() );
-			custom_lb->on_new_list( &m_feSettings );
-		}
-	}
-	else
+	init_event_loop( c );
+	while ( event_loop( c ) == false )
 	{
-		//
-		// Use the default built-in controls
-		//
-		sf::Vector2i size;
-		sf::Vector2f text_scale;
-		int char_size;
-		get_common( size, text_scale, char_size );
-
-		if ( options.size() > 8 )
-			char_size /= 2;
-
-		sf::RectangleShape bg( sf::Vector2f( size.x, size.y ) );
-		bg.setFillColor( m_bgColour );
-		bg.setOutlineColor( m_textColour );
-		bg.setOutlineThickness( -2 );
-		draw_list.push_back( &bg );
-
-		FeTextPrimative heading( m_fePresent.get_font(), m_selColour,
-			sf::Color::Transparent, char_size );
-		heading.setSize( size.x, size.y / 8 );
-		heading.setOutlineColor( m_textColour );
-		heading.setOutlineThickness( -2 );
-		heading.setTextScale( text_scale );
-		heading.setString( title );
-		draw_list.push_back( &heading );
-
-		FePresentableParent temp;
-		FeListBox dialog( temp,
-			m_fePresent.get_font(),
-			m_textColour,
-			sf::Color::Transparent,
-			m_selColour,
-			m_selBgColour,
-			char_size,
-			size.y / ( char_size * 1.5 * text_scale.y ) );
-
-		dialog.setPosition( 2, size.y / 8 );
-		dialog.setSize( size.x - 4, size.y * 7 / 8 );
-		dialog.init_dimensions();
-		dialog.setTextScale( text_scale );
-		dialog.setCustomText( sel, options );
-		draw_list.push_back( &dialog );
-
 		if ( fm.flag_set() )
-			m_fePresent.on_transition( ShowOverlay, var );
-
-		init_event_loop( c );
-		while ( event_loop( c ) == false )
-		{
-			if ( fm.flag_set() )
-				m_fePresent.on_transition( NewSelOverlay, sel );
-			dialog.setCustomSelection( sel );
-		}
-
-		if ( fm.flag_set() )
-			m_fePresent.on_transition( HideOverlay, 0 );
+			m_fePresent.on_transition( NewSelOverlay, sel );
+		dialog.setCustomSelection( sel );
 	}
+
+	if ( fm.flag_set() )
+		m_fePresent.on_transition( HideOverlay, 0 );
 
 	return sel;
 }
@@ -601,113 +552,64 @@ int FeOverlay::common_basic_dialog(
 	if ( extra_exit != FeInputMap::LAST_COMMAND )
 		var = (int)extra_exit;
 
-	FeText *custom_caption;
-	FeListBox *custom_lb;
-	bool do_custom = m_fePresent.get_overlay_custom_controls(
-		custom_caption, custom_lb );
+	sf::Vector2i size;
+	sf::Vector2f text_scale;
+	int char_size;
+	get_common( size, text_scale, char_size );
 
-	if ( fm.flag_set() && do_custom )
-	{
-		//
-		// Custom overlay controlled by the script
-		//
-		std::string old_cap;
-		if ( custom_caption )
-		{
-			old_cap = custom_caption->get_string();
-			custom_caption->set_string( msg_str.c_str() );
-		}
+	float slice = size.y / 2;
 
-		if ( custom_lb )
-			custom_lb->setCustomText( sel, list );
+	sf::RectangleShape bg( sf::Vector2f( size.x, size.y ) );
+	bg.setFillColor( m_bgColour );
+	bg.setOutlineColor( m_textColour );
+	bg.setOutlineThickness( -2 );
 
+	FeTextPrimative message(
+		m_fePresent.get_font(),
+		m_textColour,
+		sf::Color::Transparent,
+		char_size );
+	message.setWordWrap( true );
+	message.setTextScale( text_scale );
+
+	FePresentableParent temp;
+	FeListBox dialog( temp,
+		m_fePresent.get_font(),
+		m_textColour,
+		sf::Color::Transparent,
+		m_selColour,
+		m_selBgColour,
+		char_size,
+		( size.y - slice ) / ( char_size * 1.5 * text_scale.y ) );
+
+	message.setPosition( 2, 2 );
+	message.setSize( size.x - 4, slice );
+	message.setString( msg_str );
+
+	dialog.setPosition( 2, slice );
+	dialog.setSize( size.x - 4, size.y - 4 - slice );
+	dialog.init_dimensions();
+	dialog.setTextScale( text_scale );
+
+	draw_list.push_back( &bg );
+	draw_list.push_back( &message );
+	draw_list.push_back( &dialog );
+
+	dialog.setCustomText( sel, list );
+
+	if ( fm.flag_set() )
 		m_fePresent.on_transition( ShowOverlay, var );
 
-		init_event_loop( c );
-		while ( event_loop( c ) == false )
-		{
-			m_fePresent.on_transition( NewSelOverlay, sel );
-
-			if ( custom_lb )
-				custom_lb->setCustomSelection( sel );
-		}
-
-		m_fePresent.on_transition( HideOverlay, 0 );
-
-		// reset to the old text in these controls when done
-		if ( custom_caption )
-			custom_caption->set_string( old_cap.c_str() );
-
-		if ( custom_lb )
-		{
-			custom_lb->setCustomText( 0, std::vector<std::string>() );
-			custom_lb->on_new_list( &m_feSettings );
-		}
-	}
-	else
+	init_event_loop( c );
+	while ( event_loop( c ) == false )
 	{
-		//
-		// Use the default built-in controls
-		//
-		sf::Vector2i size;
-		sf::Vector2f text_scale;
-		int char_size;
-		get_common( size, text_scale, char_size );
-
-		float slice = size.y / 2;
-
-		sf::RectangleShape bg( sf::Vector2f( size.x, size.y ) );
-		bg.setFillColor( m_bgColour );
-		bg.setOutlineColor( m_textColour );
-		bg.setOutlineThickness( -2 );
-
-		FeTextPrimative message(
-			m_fePresent.get_font(),
-			m_textColour,
-			sf::Color::Transparent,
-			char_size );
-		message.setWordWrap( true );
-		message.setTextScale( text_scale );
-
-		FePresentableParent temp;
-		FeListBox dialog( temp,
-			m_fePresent.get_font(),
-			m_textColour,
-			sf::Color::Transparent,
-			m_selColour,
-			m_selBgColour,
-			char_size,
-			( size.y - slice ) / ( char_size * 1.5 * text_scale.y ) );
-
-		message.setPosition( 2, 2 );
-		message.setSize( size.x - 4, slice );
-		message.setString( msg_str );
-
-		dialog.setPosition( 2, slice );
-		dialog.setSize( size.x - 4, size.y - 4 - slice );
-		dialog.init_dimensions();
-		dialog.setTextScale( text_scale );
-
-		draw_list.push_back( &bg );
-		draw_list.push_back( &message );
-		draw_list.push_back( &dialog );
-
-		dialog.setCustomText( sel, list );
-
 		if ( fm.flag_set() )
-			m_fePresent.on_transition( ShowOverlay, var );
-
-		init_event_loop( c );
-		while ( event_loop( c ) == false )
-		{
-			if ( fm.flag_set() )
-				m_fePresent.on_transition( NewSelOverlay, sel );
-			dialog.setCustomSelection( sel );
-		}
-
-		if ( fm.flag_set() )
-			m_fePresent.on_transition( HideOverlay, 0 );
+			m_fePresent.on_transition( NewSelOverlay, sel );
+		dialog.setCustomSelection( sel );
 	}
+
+	if ( fm.flag_set() )
+		m_fePresent.on_transition( HideOverlay, 0 );
 
 	return sel;
 }
