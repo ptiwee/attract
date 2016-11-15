@@ -56,7 +56,7 @@ FeListBox::FeListBox(
 		unsigned int charactersize,
 		int rows )
 	: FeBasePresentable( p ),
-	m_base_text( font, colour, bgcolour, charactersize, FeTextPrimative::Centre ),
+	m_base_text( font, colour, bgcolour, charactersize, FeTextPrimative::Left ),
 	m_selColour( selcolour ),
 	m_selBg( selbgcolour ),
 	m_selStyle( sf::Text::Regular ),
